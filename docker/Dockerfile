@@ -49,6 +49,6 @@ WORKDIR /root/ws_fanuc
 RUN apt update -y
 RUN rosdep init && rosdep update
 
-RUN echo "source install/setup.bash" >> ~/.bashrc
+RUN echo "source ~/ws_fanuc/install/setup.bash" >> ~/.bashrc
 
 COPY build.sh .
