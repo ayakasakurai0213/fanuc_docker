@@ -56,10 +56,8 @@ RUN colcon mixin update default
 # WORKDIR /root/ws_moveit/src
 # RUN git clone https://github.com/moveit/moveit2_tutorials
 # RUN vcs import --recursive < moveit2_tutorials/moveit2_tutorials.repos
-# COPY build_moveit.sh ..
 
 WORKDIR /root/ws_fanuc
 RUN echo "source /opt/ros/jazzy/setup.bash" >> ~/.bashrc
 RUN echo "source ~/ws_fanuc/install/setup.bash" >> ~/.bashrc
 RUN echo "source ~/ws_moveit/install/setup.bash" >> ~/.bashrc
-# COPY build_fanuc.sh .

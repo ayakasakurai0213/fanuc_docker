@@ -11,11 +11,9 @@ services:
       - DISPLAY=${DISPLAY}
     volumes:
       - "/tmp/.X11-unix:/tmp/.X11-unix"
-      - "../.git:/root/ws_fanuc/.git"
+      - "../.git:/root/.git"
       - "../ws_fanuc:/root/ws_fanuc"
       - "../ws_moveit:/root/ws_moveit"
-      # - "../src/fanuc_description:/root/ws_fanuc/src/fanuc_description"
-      # - "../src/fanuc_driver:/root/ws_fanuc/src/fanuc_driver"
     deploy:
       resources:
         reservations:
