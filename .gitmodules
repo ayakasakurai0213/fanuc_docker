@@ -1,0 +1,9 @@
+[submodule "src/fanuc_description"]
+	path = src/fanuc_description
+	url = https://github.com/FANUC-CORPORATION/fanuc_description.git
+[submodule "src/fanuc_driver"]
+	path = src/fanuc_driver
+	url = https://github.com/FANUC-CORPORATION/fanuc_driver.git
+[submodule "src/ros2_robotiq_gripper"]
+	path = src/ros2_robotiq_gripper
+	url = https://github.com/PickNikRobotics/ros2_robotiq_gripper.git
