@@ -1,0 +1,9 @@
+[submodule "ws_fanuc/src/fanuc_description"]
+	path = ws_fanuc/src/fanuc_description
+	url = https://github.com/FANUC-CORPORATION/fanuc_description.git
+[submodule "ws_fanuc/src/fanuc_driver"]
+	path = ws_fanuc/src/fanuc_driver
+	url = https://github.com/FANUC-CORPORATION/fanuc_driver.git
+[submodule "ws_moveit/src/moveit2_tutorials"]
+	path = ws_moveit/src/moveit2_tutorials
+	url = https://github.com/moveit/moveit2_tutorials
