@@ -11,5 +11,15 @@ services:
       - DISPLAY=${DISPLAY}
     volumes:
       - "/tmp/.X11-unix:/tmp/.X11-unix"
+      - "../src/fanuc_description:/root/ws_fanuc/src/fanuc_description"
+      - "../src/fanuc_driver:/root/ws_fanuc/src/fanuc_driver"
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    runtime: nvidia
     tty: true
     privileged: true
