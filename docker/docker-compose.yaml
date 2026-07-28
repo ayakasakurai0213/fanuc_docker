@@ -11,5 +11,16 @@ services:
       - DISPLAY=${DISPLAY}
     volumes:
       - "/tmp/.X11-unix:/tmp/.X11-unix"
+      - "../.git:/root/.git"
+      - "../ws_fanuc:/root/ws_fanuc"
+      - "../ws_moveit:/root/ws_moveit"
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    runtime: nvidia
     tty: true
     privileged: true
