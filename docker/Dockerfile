@@ -61,3 +61,4 @@ WORKDIR /root/ws_fanuc
 RUN echo "source /opt/ros/jazzy/setup.bash" >> ~/.bashrc
 RUN echo "source ~/ws_fanuc/install/setup.bash" >> ~/.bashrc
 RUN echo "source ~/ws_moveit/install/setup.bash" >> ~/.bashrc
+RUN echo "export ROS_DOMAIN_ID=72" >> ~/.bashrc
