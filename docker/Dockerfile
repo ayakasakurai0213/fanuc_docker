@@ -39,11 +39,7 @@ RUN apt install -y ros-jazzy-desktop \
 # source build of fanuc packages
 RUN git lfs install
 
-# WORKDIR /root/ws_fanuc/src
-# RUN git clone https://github.com/FANUC-CORPORATION/fanuc_description.git
-# RUN git clone --branch main --single-branch --recurse-submodules https://github.com/FANUC-CORPORATION/fanuc_driver.git
-
-WORKDIR /root/ws_fanuc
+WORKDIR /root/fanuc_ws
 RUN apt update -y
 RUN rosdep init && rosdep update
 RUN apt update && apt dist-upgrade -y
@@ -53,11 +49,10 @@ RUN apt install python3-colcon-common-extensions python3-colcon-mixin python3-vc
 RUN colcon mixin add default https://raw.githubusercontent.com/colcon/colcon-mixin-repository/master/index.yaml
 RUN colcon mixin update default
 
-# WORKDIR /root/ws_moveit/src
-# RUN git clone https://github.com/moveit/moveit2_tutorials
-# RUN vcs import --recursive < moveit2_tutorials/moveit2_tutorials.repos
+COPY build.sh .
+COPY install.sh .
 
-WORKDIR /root/ws_fanuc
 RUN echo "source /opt/ros/jazzy/setup.bash" >> ~/.bashrc
-RUN echo "source ~/ws_fanuc/install/setup.bash" >> ~/.bashrc
-RUN echo "source ~/ws_moveit/install/setup.bash" >> ~/.bashrc
+RUN echo "source ~/fanuc_ws/install/setup.bash" >> ~/.bashrc
+RUN echo "source ~/moveit_ws/install/setup.bash" >> ~/.bashrc
+RUN echo "export ROS_DOMAIN_ID=72" >> ~/.bashrc

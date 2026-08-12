@@ -219,5 +219,5 @@ __marimo__/
 
 **/install/
 **/log/
-**/ws_moveit/src/
-**/ws_fanuc/src/ros2_robotiq_gripper/
+**/moveit_ws/src/
+**/datasets/

@@ -12,8 +12,9 @@ services:
     volumes:
       - "/tmp/.X11-unix:/tmp/.X11-unix"
       - "../.git:/root/.git"
-      - "../ws_fanuc:/root/ws_fanuc"
-      - "../ws_moveit:/root/ws_moveit"
+      - "../fanuc_ws:/root/fanuc_ws"
+      - "../moveit_ws:/root/moveit_ws"
+      - "../lerobot_ws:/root/lerobot_ws"
     deploy:
       resources:
         reservations:
