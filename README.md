@@ -36,5 +36,10 @@ ros2 launch fanuc_moveit_config fanuc_moveit.launch.py robot_model:=crx5ia_2f_85
 
 teleop with keyboard
 ```
-ros2 launch fanuc_moveit_config demo_ros_api.launch.py robot_model:=crx5ia_2f_85gripper use_mock:=true
+lerobot-teleoperate --robot.type=fanuc_ros --robot.id=fanuc_arm --teleop.type=keyboard_joint --teleop.id=fanuc_arm --display_data=true --robot.use_isaac=true
+```
+
+record data
+```
+lerobot-record --robot.type=fanuc_ros --robot.id=fanuc_arm --teleop.type=keyboard_joint --teleop.id=fanuc_arm --display_data=true --robot.use_isaac=true --dataset.repo_id=/test --dataset.num_episodes=5 --dataset.single_task="test" --dataset.root=./datasets/test
 ```

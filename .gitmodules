@@ -9,3 +9,11 @@
 [submodule "moveit_ws/src/moveit2_tutorials"]
 	path = moveit_ws/src/moveit2_tutorials
 	url = https://github.com/moveit/moveit2_tutorials.git
+
+[submodule "lerobot_ws/lerobot"]
+	path = lerobot_ws/lerobot
+	url = https://github.com/huggingface/lerobot.git
+	
+[submodule "lerobot_ws/lerobot_ros"]
+	path = lerobot_ws/lerobot_ros
+	url = git@github.com:ayakasakurai0213/lerobot-ros.git

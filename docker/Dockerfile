@@ -49,30 +49,9 @@ RUN apt install python3-colcon-common-extensions python3-colcon-mixin python3-vc
 RUN colcon mixin add default https://raw.githubusercontent.com/colcon/colcon-mixin-repository/master/index.yaml
 RUN colcon mixin update default
 
-# install miniconda
-# RUN curl -sSL https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -o miniconda.sh \
-#     && bash miniconda.sh -b -p /opt/conda \
-#     && rm miniconda.sh \
-#     && /opt/conda/bin/conda clean --all --yes \
-#     && ln -s /opt/conda/etc/profile.d/conda.sh /etc/profile.d/conda.sh \
-#     && echo ". /opt/conda/etc/profile.d/conda.sh" >> ~/.bashrc \
-#     && echo "conda activate base" >> ~/.bashrc
+COPY build.sh .
+COPY install.sh .
 
-# # create env lerobot-ros
-# ENV PATH="/opt/conda/bin:$PATH"
-
-# RUN conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/main \
-#     && conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/r \
-#     && conda create -y -n lerobot-ros python=3.12 \
-#     && conda run -n lerobot-ros conda install -c conda-forge libstdcxx-ng -y \
-#     && echo "conda activate lerobot-ros" >> ~/.bashrc
-
-# ENV PATH="/opt/conda/envs/lerobot-ros/bin:/opt/conda/bin:$PATH"
-
-# RUN pip install catkin_pkg empy numpy lark
-
-
-WORKDIR /root/fanuc_ws
 RUN echo "source /opt/ros/jazzy/setup.bash" >> ~/.bashrc
 RUN echo "source ~/fanuc_ws/install/setup.bash" >> ~/.bashrc
 RUN echo "source ~/moveit_ws/install/setup.bash" >> ~/.bashrc
