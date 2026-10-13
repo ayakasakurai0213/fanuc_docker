@@ -14,6 +14,3 @@
 	path = lerobot_ws/lerobot
 	url = https://github.com/huggingface/lerobot.git
 	
-[submodule "lerobot_ws/lerobot_ros"]
-	path = lerobot_ws/lerobot_ros
-	url = git@github.com:ayakasakurai0213/lerobot-ros.git
