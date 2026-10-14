@@ -122,7 +122,8 @@ from lerobot.teleoperators import (  # noqa: F401
     unitree_g1,
 )
 
-import lerobot_robot_ros, lerobot_teleoperator_devices
+# import lerobot_robot_ros, lerobot_teleoperator_devices
+from . import robots, teleoperators
 
 from lerobot.utils.import_utils import register_third_party_plugins
 from lerobot.utils.robot_utils import precise_sleep
