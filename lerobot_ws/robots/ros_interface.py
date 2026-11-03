@@ -28,8 +28,8 @@ from sensor_msgs.msg import JointState
 from std_msgs.msg import Float64MultiArray
 from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
 
-from .config import ActionType, GripperActionType, ROS2InterfaceConfig
-from .moveit_servo import MoveIt2Servo
+from lerobot_robot_ros.config import ActionType, GripperActionType, ROS2InterfaceConfig
+from lerobot_robot_ros.moveit_servo import MoveIt2Servo
 
 logger = logging.getLogger(__name__)
 

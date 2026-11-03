@@ -34,8 +34,13 @@ import numpy as np
 
 from lerobot.lerobot_types import RobotAction
 
-from .base import IsaacTeleopTeleoperator, _isaacteleop_available
-from .config_isaac_teleop import XRControllerConfig
+import sys
+from pathlib import Path
+ISAAC_TELEOP_PATH = str(Path(__file__).parent.parent) + "/" + str(Path("lerobot/examples/isaac_teleop_to_so101"))
+sys.path.append(ISAAC_TELEOP_PATH)
+
+from isaac_teleop.base import IsaacTeleopTeleoperator, _isaacteleop_available
+from isaac_teleop.config_isaac_teleop import XRControllerConfig
 
 from lerobot_teleoperator_devices.keyboard_joint import KeyboardJointTeleop
 

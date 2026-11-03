@@ -34,7 +34,19 @@ RUN dpkg -i /tmp/ros2-apt-source.deb
 # install ros2
 RUN apt update && apt install ros-dev-tools -y
 RUN apt install -y ros-jazzy-desktop \
-    ros-jazzy-ros-base
+    ros-jazzy-ros-base \ 
+    ros-jazzy-moveit \
+    ros-jazzy-ros2-control \
+    ros-jazzy-ros2-controllers \
+    ros-jazzy-controller-manager \
+    ros-jazzy-joint-state-broadcaster \
+    ros-jazzy-joint-trajectory-controller \
+    ros-jazzy-robot-state-publisher \
+    ros-jazzy-xacro \
+    ros-jazzy-rviz2 \
+    ros-jazzy-ros2controlcli \
+    ros-jazzy-control-msgs \
+    ros-jazzy-launch-param-builder
 
 # source build of fanuc packages
 RUN git lfs install
@@ -51,6 +63,7 @@ RUN colcon mixin update default
 
 COPY build.sh .
 COPY install.sh .
+COPY create_env.sh .
 
 RUN echo "source /opt/ros/jazzy/setup.bash" >> ~/.bashrc
 RUN echo "source ~/fanuc_ws/install/setup.bash" >> ~/.bashrc

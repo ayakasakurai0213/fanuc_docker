@@ -151,7 +151,10 @@ from lerobot.teleoperators import (  # noqa: F401
     unitree_g1,
 )
 
-import lerobot_robot_ros, lerobot_teleoperator_devices
+import sys
+from pathlib import Path
+sys.path.append(str(Path(__file__).parent.parent.parent))
+from lerobot_ws import robots, teleoperators
 
 from lerobot.teleoperators.keyboard import KeyboardTeleop
 from lerobot.utils.constants import ACTION, OBS_STR

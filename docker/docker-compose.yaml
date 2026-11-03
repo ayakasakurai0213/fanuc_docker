@@ -2,6 +2,10 @@ services:
   fanuc_ros2:
     container_name: fanuc_ros2
     image: fanuc_ros2
+    ports:
+      - "47998:47998/udp"
+      - "49100:49100/tcp"
+      - "48322:48322/tcp"
     build:
       context: .
       dockerfile: Dockerfile
@@ -15,6 +19,11 @@ services:
       - "../fanuc_ws:/root/fanuc_ws"
       - "../moveit_ws:/root/moveit_ws"
       - "../lerobot_ws:/root/lerobot_ws"
+    devices:
+      - "/dev/video0:/dev/video0"
+      - "/dev/video1:/dev/video1"
+      - "/dev/video2:/dev/video2"
+      - "/dev/video3:/dev/video3"
     deploy:
       resources:
         reservations:

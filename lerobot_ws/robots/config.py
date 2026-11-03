@@ -1,5 +1,6 @@
 from dataclasses import dataclass, field
-from lerobot_robot_ros.config import ROS2Config
+from lerobot.robots import RobotConfig
+from lerobot_robot_ros.config import ROS2Config, ActionType, ROS2InterfaceConfig
 
 
 @RobotConfig.register_subclass("fanuc_ros")
@@ -19,3 +20,5 @@ class CRXROSConfig(ROS2Config):
             gripper_close_position=0.7929,
         ),
     )
+    
+    use_isaac: bool = False

@@ -1,3 +1,3 @@
-from .config import FanucKeyboardJointTeleopConfig, XRRosControllerConfig
-# from lerobot_teleoperator_devices.keyboard_joint import KeyboardJointTeleop
+from .config import CRXKeyboardJointTeleopConfig, XRROSControllerConfig
 from .teleoperator import XRController, CRXKeyboardJointTeleop
+from .utils import make_teleoperator_from_config
