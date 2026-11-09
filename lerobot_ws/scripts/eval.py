@@ -9,7 +9,7 @@ import rclpy
 from rclpy.node import Node
 from rclpy.executors import MultiThreadedExecutor
 from std_msgs.msg import String
-from sensor_msgs.msg import JointState
+from sensor_msgs.msg import JointState, Image
 
 from lerobot.policies.act.modeling_act import ACTPolicy
 from lerobot.datasets.lerobot_dataset import LeRobotDataset
@@ -73,8 +73,38 @@ class ImageClass:
     def shutdown(self):
         for cap in self.cap:
             cap.release()
-    
 
+
+class CameraSubscriber(Node):
+    def __init__(self):
+        super().__init__("camera_subscriber")
+        
+        self.images = {}
+        
+        self.top_camera_sub = self.create_subscription(
+            Image,
+            '/top_rgb',
+            self.image_callback,
+            10
+        )
+        self.hand_camera_sub = self.create_subscription(
+            Image,
+            '/hand_rgb',
+            self.image_callback,
+            10
+        )
+    
+    def image_callback(self, msg):
+        # ROS Image -> OpenCV image
+        height = msg.height
+        width = msg.width
+        
+        data = np.frombuffer(msg.data, dtype=np.uint8)
+        data = data.reshape([height, width, 3])
+        data = torch.from_numpy(data).clone()
+        self.images[msg.header.frame_id] = data.type(torch.float32).permute(2, 0, 1)
+
+    
 def get_obs(joint_sub, image_sub, device):
     observations = {}
     
@@ -83,7 +113,7 @@ def get_obs(joint_sub, image_sub, device):
         # print(observations["observation.state"].shape)
     
     if len(image_sub.images) != 0:
-        for img_name in image_sub.image_name:
+        for img_name in image_sub.images.keys():
             observations[f"observation.images.{img_name}"] = image_sub.images[img_name].unsqueeze(0).to(device)
             # print(observations[f"observation.images.{img_name}"].shape)
         
@@ -94,16 +124,23 @@ def main(args):
     rclpy.init()
     joint_state_sub = JointStateSubscriber()
     joint_command_pub = JointCommandPublisher()
-    image_sub = ImageClass(args)
+    
+    if args.use_isaac:
+        image_sub = CameraSubscriber()
+    else:
+        image_sub = ImageClass(args)
     
     executor = MultiThreadedExecutor(num_threads=4)
     executor.add_node(joint_state_sub)
     
-    spin_thread = threading.Thread(target=executor.spin)
-    image_thread = threading.Thread(target=image_sub.get_images)
+    if args.use_isaac:
+        executor.add_node(image_sub)
+    else:
+        image_thread = threading.Thread(target=image_sub.get_images)
+        image_thread.start()
     
+    spin_thread = threading.Thread(target=executor.spin)
     spin_thread.start()
-    image_thread.start()
     
     if args.policy == "act":
         policy = ACTPolicy.from_pretrained(args.ckpt_path)
@@ -130,21 +167,25 @@ def main(args):
         pass
     
     finally:
-        image_sub.shutdown()
         executor.shutdown()
         spin_thread.join()
         joint_state_sub.destroy_node()
         joint_command_pub.destroy_node()
+        if args.use_isaac:
+            image_sub.destroy_node()
+        else:
+            image_sub.shutdown()
         rclpy.shutdown()
         
 
 if __name__ == "__main__":    
-    parser = argparse.ArgumentParser(description="Replay LeRobot datasets on CRX")
+    parser = argparse.ArgumentParser(description="Eval on CRX")
     parser.add_argument("--ckpt_path", type=str, default=None, help="Pytorch model checkpoint to load.")
     parser.add_argument("--policy", type=str, default=None, help="Name of policy.")
-    parser.add_argument("--camera_path", type=str, nargs="*", default=["/dev/video0"], help="Path of images.")
-    parser.add_argument("--camera_names", type=str, nargs="*", default=["top_images"], help="Name of cameras.")
+    parser.add_argument("--camera_path", type=str, nargs="*", default=["/dev/video0", "/dev/video2"], help="Path of images.")
+    parser.add_argument("--camera_names", type=str, nargs="*", default=["top_image", "hand_image"], help="Name of cameras.")
     parser.add_argument("--device", type=str, default="cuda", help="device")
+    parser.add_argument("--use_isaac", type=bool, default=False, help="On isaac sim")
     args = parser.parse_args()
     
     main(args)

@@ -112,7 +112,7 @@ from lerobot.teleoperators import (  # noqa: F401
     homunculus,
     keyboard,
     koch_leader,
-    # make_teleoperator_from_config,
+    make_teleoperator_from_config,
     omx_leader,
     openarm_leader,
     openarm_mini,
@@ -126,7 +126,6 @@ import sys
 from pathlib import Path
 sys.path.append(str(Path(__file__).parent.parent.parent))
 from lerobot_ws import robots, teleoperators
-from lerobot_ws.teleoperators import make_teleoperator_from_config
 
 from lerobot.utils.import_utils import register_third_party_plugins
 from lerobot.utils.robot_utils import precise_sleep

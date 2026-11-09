@@ -15,16 +15,17 @@
 import logging
 import threading
 import time
+import numpy as np
 
 import rclpy
 from control_msgs.action import GripperCommand
 from lerobot.utils.errors import DeviceNotConnectedError
 from rclpy.action import ActionClient
 from rclpy.callback_groups import ReentrantCallbackGroup
-from rclpy.executors import Executor, SingleThreadedExecutor
+from rclpy.executors import Executor, SingleThreadedExecutor, MultiThreadedExecutor
 from rclpy.node import Node
 from rclpy.publisher import Publisher
-from sensor_msgs.msg import JointState
+from sensor_msgs.msg import JointState, Image
 from std_msgs.msg import Float64MultiArray
 from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
 
@@ -32,6 +33,35 @@ from lerobot_robot_ros.config import ActionType, GripperActionType, ROS2Interfac
 from lerobot_robot_ros.moveit_servo import MoveIt2Servo
 
 logger = logging.getLogger(__name__)
+
+
+class CameraSubscriber(Node):
+    def __init__(self):
+        super().__init__("camera_subscriber")
+        
+        self.cameras = {}
+        
+        self.top_camera_sub = self.create_subscription(
+            Image,
+            '/top_rgb',
+            self.image_callback,
+            10
+        )
+        self.hand_camera_sub = self.create_subscription(
+            Image,
+            '/hand_rgb',
+            self.image_callback,
+            10
+        )
+    
+    def image_callback(self, msg):
+        # ROS Image -> OpenCV image
+        height = msg.height
+        width = msg.width
+        
+        data = np.frombuffer(msg.data, dtype=np.uint8)
+        data = data.reshape([height, width, 3])
+        self.cameras[msg.header.frame_id] = data
 
 
 class ROS2Interface:
@@ -57,6 +87,7 @@ class ROS2Interface:
         self.action_type = action_type
         self.use_isaac = use_isaac
         self.robot_node: Node | None = None
+        self.camera_node: Node | None = None
         self.pos_cmd_pub: Publisher | None = None
         self.traj_cmd_pub: Publisher | None = None
         self.gripper_action_client: ActionClient | None = None
@@ -105,15 +136,35 @@ class ROS2Interface:
             )
             self._goal_msg = GripperCommand.Goal()
 
-        self.joint_state_sub = self.robot_node.create_subscription(
+        if self.use_isaac:
+            self.joint_state_sub = self.robot_node.create_subscription(
+                JointState,
+                "/isaac_joint_states",
+                self._joint_state_callback,
+                10,
+            )
+        else:
+            self.joint_state_sub = self.robot_node.create_subscription(
+                JointState,
+                "/joint_states",
+                self._joint_state_callback,
+                10,
+            )
+            
+        self.joint_state_pub = self.robot_node.create_publisher(
             JointState,
-            "isaac_joint_states",
-            self._joint_state_callback,
-            10,
+            "/isaac_joint_commands",
+            10
         )
 
         # Create and start the executor in a separate thread
         self.executor = SingleThreadedExecutor()
+        
+        if self.use_isaac:
+            self.executor = MultiThreadedExecutor(num_threads=4)
+            self.camera_node = CameraSubscriber()
+            self.executor.add_node(self.camera_node)
+            
         self.executor.add_node(self.robot_node)
         self.executor_thread = threading.Thread(target=self.executor.spin, daemon=True)
         self.executor_thread.start()
@@ -270,6 +321,9 @@ class ROS2Interface:
         if self.joint_state_sub:
             self.joint_state_sub.destroy()
             self.joint_state_sub = None
+        if self.joint_state_pub:
+            self.joint_state_pub.destroy()
+            self.joint_state_pub = None
         if self.pos_cmd_pub:
             self.pos_cmd_pub.destroy()
             self.pos_cmd_pub = None
@@ -285,6 +339,9 @@ class ROS2Interface:
         if self.robot_node:
             self.robot_node.destroy_node()
             self.robot_node = None
+        if self.camera_node:
+            self.camera_node.destroy_node()
+            self.camera_node = None
         if self.moveit2_servo:
             self.moveit2_servo = None
 

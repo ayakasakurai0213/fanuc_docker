@@ -31,6 +31,8 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any
 
 import numpy as np
+import time
+from scipy.spatial.transform import Rotation
 
 from lerobot.lerobot_types import RobotAction
 
@@ -62,7 +64,7 @@ else:
 _BASE_T_ANCHOR_INPUT = "base_T_anchor"
 
 
-class XRController(IsaacTeleopTeleoperator):
+class XRROSController(IsaacTeleopTeleoperator):
     """Raw XR controller grip-pose teleoperator (base-frame), no retargeters.
 
     Reads the raw grip pose + squeeze + trigger off a ``ControllersSource`` rebased into
@@ -83,6 +85,9 @@ class XRController(IsaacTeleopTeleoperator):
         # Whether the last get_action() read a tracked controller; the owning loop polls this
         # to wait for the operator to connect before driving the arm.
         self._is_tracking = False
+        
+        self._last_data = None
+        self._last_time = None
 
     # ------------------------------------------------------------------
     # Pipeline construction
@@ -122,32 +127,16 @@ class XRController(IsaacTeleopTeleoperator):
     # ------------------------------------------------------------------
     # Action features
     # ------------------------------------------------------------------
-
     @property
     def action_features(self) -> dict:
         return {
-            "grip_pos": {
-                "dtype": "float32",
-                "shape": (3,),
-                "names": {"x": 0, "y": 1, "z": 2},
-            },
-            "grip_quat": {
-                "dtype": "float32",
-                "shape": (4,),
-                "names": {"qx": 0, "qy": 1, "qz": 2, "qw": 3},
-            },
-            # ``get_action`` returns scalars for these two, so the advertised
-            # shape is () (0-d) to stay consistent with the returned values.
-            "squeeze": {
-                "dtype": "float32",
-                "shape": (),
-                "names": None,
-            },
-            "trigger": {
-                "dtype": "float32",
-                "shape": (),
-                "names": None,
-            },
+            "linear_x.vel": float,
+            "linear_y.vel": float,
+            "linear_z.vel": float,
+            "angular_x.vel": float,
+            "angular_y.vel": float,
+            "angular_z.vel": float,
+            "gripper.pos": float,
         }
 
     @property
@@ -202,13 +191,50 @@ class XRController(IsaacTeleopTeleoperator):
             else:
                 grip_pos, grip_quat = pos, quat
                 squeeze, trigger = squeeze_val, trigger_val
-
-        return {
+        
+        cur_time = time.perf_counter()
+        cur_data = {
             "grip_pos": grip_pos,
             "grip_quat": grip_quat,
             "squeeze": squeeze,
             "trigger": trigger,
         }
+        action = self.pose_to_cartesian(cur_data, cur_time)
+        self._last_time = cur_time
+        self._last_data = cur_data
+        
+        return action
+    
+    def pose_to_cartesian(self, data, time):
+        action = {
+            "linear_x.vel": 0.0,
+            "linear_y.vel": 0.0,
+            "linear_z.vel": 0.0,
+            "angular_x.vel": 0.0,
+            "angular_y.vel": 0.0,
+            "angular_z.vel": 0.0,
+            "gripper.pos": 0.0,
+        }
+        
+        if self._last_time is not None and self._last_data is not None:
+            delta_time = time - self._last_time
+            delta_pos = data["grip_pos"] - self._last_data["grip_pos"]
+            
+            linear_vel = delta_pos / delta_time
+            
+            if np.sum(self._last_data["grip_quat"]) == 0 or np.sum(data["grip_quat"]) == 0:
+                return action
+            
+            last_r = Rotation.from_quat(self._last_data["grip_quat"])
+            cur_r = Rotation.from_quat(data["grip_quat"])
+            
+            angular_vel = (cur_r * last_r.inv()).as_rotvec() / delta_time
+            
+            action["linear_x.vel"], action["linear_y.vel"], action["linear_z.vel"] = linear_vel
+            action["angular_x.vel"], action["angular_y.vel"], action["angular_z.vel"] = angular_vel
+            action["gripper.pos"] = data["trigger"]
+        
+        return action
 
 
 class CRXKeyboardJointTeleop(KeyboardJointTeleop):

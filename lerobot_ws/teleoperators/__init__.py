@@ -1,3 +1,2 @@
 from .config import CRXKeyboardJointTeleopConfig, XRROSControllerConfig
-from .teleoperator import XRController, CRXKeyboardJointTeleop
-from .utils import make_teleoperator_from_config
+from .teleoperator import XRROSController, CRXKeyboardJointTeleop

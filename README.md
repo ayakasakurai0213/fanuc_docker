@@ -20,6 +20,8 @@ cd ~/fanuc_ws
 ```
 
 ## How to use
+
+### moveit
 moveit with mock
 ```
 ros2 launch fanuc_moveit_config fanuc_moveit.launch.py robot_model:=crx5ia_2f_85gripper use_mock:=true
@@ -34,25 +36,41 @@ in isaac sim
 ros2 launch fanuc_moveit_config fanuc_moveit.launch.py robot_model:=crx5ia_2f_85gripper sim_isaac:=true
 ```
 
-teleop with keyboard
+### ROS2 × LeRobot
+#### teleop
+```
+ros2 launch fanuc_moveit_config moveit_servo.launch.py robot_model:=crx5ia_2f_85gripper sim_isaac:=true
+```
+※ only xr_ros_controller
+```
+python scripts/servo_to_joint_bridge.py
+```
+keyboard
 ```
 python scripts/teleop.py --robot.type=fanuc_ros --robot.id=fanuc_arm --teleop.type=crx_keyboard_joint --teleop.id=fanuc_arm --display_data=true --robot.use_isaac=true
 ```
+VR
+```
+python scripts/teleop.py --robot.type=fanuc_ros --robot.id=xr_fanuc_arm --teleop.type=xr_ros_controller --teleop.id=fanuc_arm --display_data=true --robot.use_isaac=true
+```
 
-record data
+
+#### record
 ```
 python scripts/record.py --robot.type=fanuc_ros --robot.id=fanuc_arm --teleop.type=crx_keyboard_joint --teleop.id=fanuc_arm --display_data=true --robot.use_isaac=true --dataset.repo_id=/test --dataset.num_episodes=5 --dataset.single_task="test" --dataset.root=./datasets/test --dataset.push_to_hub=false
 ```
 
-replay data
+#### replay data
 ```
-```
-
-train
-```
+python scripts/replay.py --repo_id test --root datasets/test/ --episode_num 1
 ```
 
-eval
+#### train
+```
+lerobot-train --policy.type=act     --dataset.repo_id="test2"     --dataset.root="datasets/test2"     --output_dir="outputs/train/test2"     --batch_size=8     --steps=30000     --policy.push_to_hub False
+```
+
+#### eval
 ```
 python scripts/eval.py --ckpt_path outputs/train/test/checkpoints/last/pretrained_model/ --policy act
 ```

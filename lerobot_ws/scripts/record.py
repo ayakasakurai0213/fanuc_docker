@@ -330,7 +330,13 @@ def record_loop(
                     "The robot won't be at its rest position at the start of the next episode."
                 )
             continue
-
+        
+        action_data = {}
+        for key in obs.keys():
+            if "pos" in key:
+                action_data[key] = obs[key]
+        action_values = action_data
+        
         # Send action to robot
         # Action can eventually be clipped using `max_relative_target`,
         # so action actually sent is saved in the dataset. action = postprocessor.process(action)
@@ -475,6 +481,9 @@ def record(
         with VideoEncodingManager(dataset):
             recorded_episodes = 0
             while recorded_episodes < cfg.dataset.num_episodes and not events["stop_recording"]:
+                log_say("Initialize arm position")
+                robot.init_pos()
+                
                 log_say(f"Recording episode {dataset.num_episodes}", cfg.play_sounds)
                 record_loop(
                     robot=robot,

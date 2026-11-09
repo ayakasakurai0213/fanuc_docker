@@ -17,8 +17,12 @@ class CRXROSConfig(ROS2Config):
             min_joint_positions=[-3.49066, -3.1398473, -1.18682, -3.31613, -3.1398473, -3.92699],     # -200, -179.9, -68, -190, -179.9, -225
             max_joint_positions=[3.49066, 3.1398473, 4.32842, 3.31613, 3.1398473, 3.92699],   # 200, 179.9, 248, 190, 179.9, 225
             gripper_open_position=0.0,
-            gripper_close_position=0.7929,
+            gripper_close_position=0.8,
         ),
     )
     
     use_isaac: bool = False
+    
+    def __post_init__(self):
+        if "xr" in self.id:
+            self.action_type = ActionType.CARTESIAN_VELOCITY
