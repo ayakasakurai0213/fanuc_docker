@@ -263,6 +263,9 @@ def teleoperate(cfg: TeleoperateConfig):
 
     teleop.connect()
     robot.connect()
+    
+    if robot.config.use_isaac:
+        robot.init_pos()
 
     try:
         teleop_loop(

@@ -58,7 +58,10 @@ class CRXROS(ROS2Robot):
             raise DeviceNotConnectedError(f"{self} is not connected.")
 
         obs_dict: dict[str, Any] = {}
-        joint_state = self.ros2_interface.joint_state
+        if "xr" in self.config.id: 
+            joint_state = self.ros2_interface.obs_state
+        else:
+            joint_state = self.ros2_interface.joint_state
         if joint_state is None:
             raise ValueError("Joint state is not available yet.")
         obs_dict.update({f"{joint}.pos": pos for joint, pos in joint_state["position"].items()})

@@ -97,6 +97,7 @@ class ROS2Interface:
         self.executor_thread: threading.Thread | None = None
         self.is_connected = False
         self._last_joint_state: dict[str, dict[str, float]] | None = None
+        self._last_obs_state: dict[str, dict[str, float]] | None = None
 
     def connect(self) -> None:
         if not rclpy.ok():
@@ -151,6 +152,12 @@ class ROS2Interface:
                 10,
             )
             
+        self.obs_state_sub = self.robot_node.create_subscription(
+                JointState,
+                "/isaac_joint_commands",
+                self._obs_state_callback,
+                10,
+            )
         self.joint_state_pub = self.robot_node.create_publisher(
             JointState,
             "/isaac_joint_commands",
@@ -316,11 +323,43 @@ class ROS2Interface:
 
         self._last_joint_state["position"] = positions
         self._last_joint_state["velocity"] = velocities
+    
+    @property
+    def obs_state(self) -> dict[str, dict[str, float]] | None:
+        """Get the last received joint state."""
+        return self._last_obs_state
+    
+    def _obs_state_callback(self, msg: "JointState") -> None:
+        self._last_obs_state = self._last_obs_state or {}
+        positions = {}
+        # velocities = {}
+        name_to_index = {name: i for i, name in enumerate(msg.name)}
+        for joint_name in self.config.arm_joint_names:
+            idx = name_to_index.get(joint_name)
+            if idx is None:
+                raise ValueError(f"Joint '{joint_name}' not found in joint state.")
+            positions[joint_name] = msg.position[idx]
+            # velocities[joint_name] = msg.velocity[idx]
+
+        if self.config.gripper_joint_name:
+            idx = name_to_index.get(self.config.gripper_joint_name)
+            if idx is None:
+                raise ValueError(
+                    f"Gripper joint '{self.config.gripper_joint_name}' not found in joint state."
+                )
+            positions[self.config.gripper_joint_name] = msg.position[idx]
+            # velocities[self.config.gripper_joint_name] = msg.velocity[idx]
+
+        self._last_obs_state["position"] = positions
+        # self._last_obs_state["velocity"] = velocities
 
     def disconnect(self):
         if self.joint_state_sub:
             self.joint_state_sub.destroy()
             self.joint_state_sub = None
+        if self.obs_state_sub:
+            self.obs_state_sub.destroy()
+            self.obs_state_sub = None
         if self.joint_state_pub:
             self.joint_state_pub.destroy()
             self.joint_state_pub = None
